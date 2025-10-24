@@ -1,0 +1,18 @@
+<IfModule mod_headers.c>
+    # 4.1.2 - HTTP Strict Transport Security (HSTS)
+    Header set Strict-Transport-Security "max-age=31536000; includeSubDomains" env=HTTPS
+
+    # 4.1.4 - Content Security Policy (CSP) - VERSI FINAL
+    # Menambahkan semua CDN yang kita gunakan, termasuk untuk font dan dependensi JS.
+    Header set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; object-src 'none'; frame-src 'none';"
+
+    # 4.1.5 - X-Content-Type-Options
+    Header set X-Content-Type-Options "nosniff"
+
+    # 4.1.3 - Referrer-Policy
+    Header set Referrer-Policy "no-referrer-when-downgrade"
+</IfModule>
+
+# 4.1.1 - Insecure Cookie Setting (HttpOnly Flag)
+php_flag session.cookie_httponly on
+php_flag session.cookie_secure on
