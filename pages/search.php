@@ -1,11 +1,8 @@
 <?php
 // Bagian PHP di atas untuk menampilkan history
 $query_result = null;
-// $error_message = ''; // <-- DIHAPUS
+$error_message = ''; // Modifikasi untuk error history
 $search_query = '';
-
-// BLOK $_GET['error'] DIHAPUS
-// if (isset($_GET['error'])) { ... }
 
 // Logika untuk menampilkan hasil dari history
 if (isset($_GET['history_id']) && is_numeric($_GET['history_id'])) {
@@ -26,8 +23,7 @@ if (isset($_GET['history_id']) && is_numeric($_GET['history_id'])) {
         $search_query = $history_data['query_text'];
         $query_result = json_decode($history_data['result_json'], true);
     } else {
-        // Kita bisa gunakan sistem flash message di sini juga jika mau,
-        // tapi untuk error logic halaman, biarkan saja
+        // Ini adalah error jika history_id tidak ditemukan, BUKAN flash message
         $error_message = "History tidak ditemukan atau Anda tidak memiliki hak akses.";
     }
 }
@@ -36,8 +32,7 @@ if (isset($_GET['history_id']) && is_numeric($_GET['history_id'])) {
 <div class="container mx-auto">
     <h1 class="text-3xl font-bold mb-6">Pencarian OSINT</h1>
 
-    <?php if (!empty($error_message)): // Modifikasi kecil untuk error history
-    ?>
+    <?php if (!empty($error_message)): ?>
         <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
             <p class="font-bold">Gagal!</p>
             <p><?= e($error_message) ?></p>
@@ -46,7 +41,7 @@ if (isset($_GET['history_id']) && is_numeric($_GET['history_id'])) {
 
 
     <div class="bg-white p-6 rounded-lg shadow-md mb-8">
-        <form action="index.php?page=submit_search" method="POST">
+        <form action="pages/submit_search.php" method="POST">
              <label for="query-input" class="block text-gray-700 text-sm font-bold mb-2">Masukkan Query Baru:</label>
             <div class="flex">
                 <input type="text" name="query" id="query-input" class="shadow appearance-none border rounded-l w-full py-2 px-3 text-gray-700" placeholder="contoh: chiepoel@gmail.com" required>
