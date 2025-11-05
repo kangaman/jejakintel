@@ -149,4 +149,25 @@ function send_email($to, $subject, $body) {
         return false;
     }
 }
+
+/**
+ * --- FUNGSI BARU DITAMBAHKAN DI SINI ---
+ * Mengalihkan ke URL lain dengan menyimpan pesan di session.
+ *
+ * @param string $url URL tujuan
+ * @param string $type Tipe pesan ('success' atau 'error')
+ * @param string $message Isi pesan
+ */
+function redirect_with_message($url, $type, $message) {
+    // Session sudah dimulai di atas file ini, jadi kita bisa langsung pakai
+    
+    $_SESSION['flash_message'] = [
+        'type' => $type,
+        'message' => $message
+    ];
+    
+    // Menggunakan fungsi 'redirect()' yang sudah ada di file ini
+    redirect($url);
+}
+
 ?>
