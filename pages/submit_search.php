@@ -3,14 +3,16 @@
 
 // Pastikan pengguna sudah login
 if (!is_logged_in()) {
-    redirect('index.php?page=login');
+    // Gunakan fungsi baru
+    redirect_with_message('index.php?page=login', 'error', 'Anda harus login untuk mengakses halaman ini.');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
     $search_query = trim($_POST['query']);
     
     if (empty($search_query)) {
-        redirect('index.php?page=search&error=empty');
+        // Gunakan fungsi baru
+        redirect_with_message('index.php?page=search', 'error', 'Kolom pencarian tidak boleh kosong.');
     }
 
     $user_id = $_SESSION['user_id'];
@@ -35,7 +37,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
         if ($user['daily_query_count'] < 5) {
             $can_search = true;
         } else {
-            redirect('index.php?page=search&error=limit');
+            // Gunakan fungsi baru
+            redirect_with_message('index.php?page=search', 'error', 'Anda telah mencapai batas kuota pencarian harian.');
         }
     }
 
@@ -55,14 +58,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
             $log_details = "Pengguna '{$_SESSION['username']}' mengirim query baru: '{$search_query}'.";
             log_activity($pdo, 'USER_NEW_QUERY', $log_details);
             
-            // Alihkan ke halaman history
-            redirect('index.php?page=history&status=queued');
+            // Alihkan ke halaman history dengan pesan sukses
+            // Gunakan fungsi baru
+            redirect_with_message('index.php?page=history', 'success', 'Pencarian berhasil dikirim ke antrean.');
 
         } catch (PDOException $e) {
-            redirect('index.php?page=search&error=queue_failed');
+            // Gunakan fungsi baru
+            redirect_with_message('index.php?page=search', 'error', 'Gagal menambahkan ke antrean karena masalah database.');
         }
     }
 } else {
-    redirect('index.php?page=search');
+    // Gunakan fungsi baru
+    redirect_with_message('index.php?page=search', 'error', 'Metode pengiriman tidak valid.');
 }
 ?>
