@@ -1,18 +1,34 @@
 <?php
-// File ini akan memproses pengiriman form dan mengarahkan ke halaman History.
+// File ini SEKARANG berjalan mandiri (standalone)
+// jadi kita harus memuat semua file yang diperlukan.
 
-// Pastikan pengguna sudah login
-if (!is_logged_in()) {
-    // Gunakan fungsi baru
-    redirect_with_message('index.php?page=login', 'error', 'Anda harus login untuk mengakses halaman ini.');
+// 1. Mulai session (jika belum dimulai)
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
 }
 
+// 2. Muat file konfigurasi dan fungsi
+// Kita perlu naik satu level (../) untuk menemukan folder config dan includes
+// __DIR__ adalah path folder saat ini (yaitu 'pages')
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/functions.php';
+
+// 3. Tentukan URL untuk redirect (sekarang harus pakai ../)
+$login_url   = '../index.php?page=login';
+$search_url  = '../index.php?page=search';
+$history_url = '../index.php?page=history';
+
+// 4. Pastikan pengguna sudah login
+if (!is_logged_in()) {
+    redirect_with_message($login_url, 'error', 'Anda harus login untuk mengakses halaman ini.');
+}
+
+// 5. Cek metode POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
     $search_query = trim($_POST['query']);
     
     if (empty($search_query)) {
-        // Gunakan fungsi baru
-        redirect_with_message('index.php?page=search', 'error', 'Kolom pencarian tidak boleh kosong.');
+        redirect_with_message($search_url, 'error', 'Kolom pencarian tidak boleh kosong.');
     }
 
     $user_id = $_SESSION['user_id'];
@@ -27,18 +43,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
         $stmt->execute([$user_id]);
         $user = $stmt->fetch();
 
-        if ($user['last_query_date'] != $today) {
-            $stmt = $pdo->prepare("UPDATE users SET daily_query_count = 0, last_query_date = ? WHERE id = ?");
-            $stmt->execute([$today, $user_id]);
-            $user['daily_query_count'] = 0;
+        $user_count = 0;
+        if ($user) {
+            if ($user['last_query_date'] != $today) {
+                // Reset kuota jika hari baru
+                $stmt_reset = $pdo->prepare("UPDATE users SET daily_query_count = 0, last_query_date = ? WHERE id = ?");
+                $stmt_reset->execute([$today, $user_id]);
+                $user_count = 0;
+            } else {
+                $user_count = (int)$user['daily_query_count'];
+            }
         }
 
-        // ## PERUBAHAN DI SINI: Batas diubah dari 10 menjadi 5 ##
-        if ($user['daily_query_count'] < 5) {
+        // Ambil batas dari settings
+        $stmt_limit = $pdo->query("SELECT setting_value FROM settings WHERE setting_name = 'free_user_search_limit'");
+        $free_limit = $stmt_limit->fetchColumn();
+        $free_limit = $free_limit ? (int)$free_limit : 5; // Default 5 jika tidak ada di settings
+
+        if ($user_count < $free_limit) {
             $can_search = true;
         } else {
-            // Gunakan fungsi baru
-            redirect_with_message('index.php?page=search', 'error', 'Anda telah mencapai batas kuota pencarian harian.');
+            redirect_with_message($search_url, 'error', "Anda telah mencapai batas kuota pencarian harian ($free_limit).");
         }
     }
 
@@ -48,10 +73,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
             $stmt = $pdo->prepare("INSERT INTO api_queue (user_id, query_text) VALUES (?, ?)");
             $stmt->execute([$user_id, $search_query]);
             
-            // Update kuota
+            // Update kuota HANYA jika free user
             if ($user_role === 'free') {
-                $stmt = $pdo->prepare("UPDATE users SET daily_query_count = daily_query_count + 1, last_query_date = ? WHERE id = ?");
-                $stmt->execute([date('Y-m-d'), $user_id]);
+                $stmt_update = $pdo->prepare("UPDATE users SET daily_query_count = daily_query_count + 1, last_query_date = ? WHERE id = ?");
+                $stmt_update->execute([date('Y-m-d'), $user_id]);
             }
 
             // Log aktivitas
@@ -59,16 +84,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
             log_activity($pdo, 'USER_NEW_QUERY', $log_details);
             
             // Alihkan ke halaman history dengan pesan sukses
-            // Gunakan fungsi baru
-            redirect_with_message('index.php?page=history', 'success', 'Pencarian berhasil dikirim ke antrean.');
+            redirect_with_message($history_url, 'success', 'Pencarian berhasil dikirim ke antrean.');
 
         } catch (PDOException $e) {
-            // Gunakan fungsi baru
-            redirect_with_message('index.php?page=search', 'error', 'Gagal menambahkan ke antrean karena masalah database.');
+            // error_log($e->getMessage()); // uncomment untuk debug
+            redirect_with_message($search_url, 'error', 'Gagal menambahkan ke antrean karena masalah database.');
         }
     }
 } else {
-    // Gunakan fungsi baru
-    redirect_with_message('index.php?page=search', 'error', 'Metode pengiriman tidak valid.');
+    // Jika file ini diakses langsung (bukan via POST)
+    redirect_with_message($search_url, 'error', 'Metode pengiriman tidak valid.');
 }
 ?>
