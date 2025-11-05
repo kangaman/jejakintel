@@ -1,23 +1,11 @@
 <?php
 // Bagian PHP di atas untuk menampilkan history
 $query_result = null;
-$error_message = '';
+// $error_message = ''; // <-- DIHAPUS
 $search_query = '';
 
-// Menangani pesan error yang dikirim dari redirect
-if (isset($_GET['error'])) {
-    switch ($_GET['error']) {
-        case 'empty':
-            $error_message = 'Kolom pencarian tidak boleh kosong.';
-            break;
-        case 'limit':
-            $error_message = 'Anda telah mencapai batas kuota pencarian harian.';
-            break;
-        case 'queue_failed':
-            $error_message = 'Gagal menambahkan ke antrean karena masalah database.';
-            break;
-    }
-}
+// BLOK $_GET['error'] DIHAPUS
+// if (isset($_GET['error'])) { ... }
 
 // Logika untuk menampilkan hasil dari history
 if (isset($_GET['history_id']) && is_numeric($_GET['history_id'])) {
@@ -38,6 +26,8 @@ if (isset($_GET['history_id']) && is_numeric($_GET['history_id'])) {
         $search_query = $history_data['query_text'];
         $query_result = json_decode($history_data['result_json'], true);
     } else {
+        // Kita bisa gunakan sistem flash message di sini juga jika mau,
+        // tapi untuk error logic halaman, biarkan saja
         $error_message = "History tidak ditemukan atau Anda tidak memiliki hak akses.";
     }
 }
@@ -46,12 +36,14 @@ if (isset($_GET['history_id']) && is_numeric($_GET['history_id'])) {
 <div class="container mx-auto">
     <h1 class="text-3xl font-bold mb-6">Pencarian OSINT</h1>
 
-    <?php if ($error_message): ?>
+    <?php if (!empty($error_message)): // Modifikasi kecil untuk error history
+    ?>
         <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
             <p class="font-bold">Gagal!</p>
             <p><?= e($error_message) ?></p>
         </div>
     <?php endif; ?>
+
 
     <div class="bg-white p-6 rounded-lg shadow-md mb-8">
         <form action="index.php?page=submit_search" method="POST">
