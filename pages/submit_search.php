@@ -58,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
         // Ambil batas dari settings
         $stmt_limit = $pdo->query("SELECT setting_value FROM settings WHERE setting_name = 'free_user_search_limit'");
         $free_limit = $stmt_limit->fetchColumn();
-        $free_limit = $free_limit ? (int)$free_limit : 5; // Default 5 jika tidak ada di settings
+        $free_limit = $free_limit ? (int)$free_limit : 3; // Default 3 jika tidak ada di settings
 
         if ($user_count < $free_limit) {
             $can_search = true;
@@ -96,3 +96,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['query'])) {
     redirect_with_message($search_url, 'error', 'Metode pengiriman tidak valid.');
 }
 ?>
+
