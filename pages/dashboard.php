@@ -136,7 +136,7 @@ if (user_role() === 'admin') {
             $user_data = $stmt->fetch();
 
             $queries_today = ($user_data['last_query_date'] == $today) ? $user_data['daily_query_count'] : 0;
-            $queries_left = 5 - $queries_today;
+            $queries_left = 3 - $queries_today;
         ?>
       <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-green-400">
         <h2 class="text-xl font-semibold text-gray-700">Sisa Kuota Pencarian Hari Ini</h2>
@@ -147,4 +147,5 @@ if (user_role() === 'admin') {
             </a>
         </div>
     <?php endif; ?>
+
 </div>
