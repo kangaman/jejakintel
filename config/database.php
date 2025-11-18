@@ -1,9 +1,9 @@
 <?php
 // Pengaturan Koneksi Database
 define('DB_HOST', 'localhost');
-define('DB_NAME', 'xltmgqsc_osint');
-define('DB_USER', 'xltmgqsc_osint'); // Ganti dengan username database Anda
-define('DB_PASS', 'H($vNJBC0@Afv6n!');     // Ganti dengan password database Anda
+define('DB_NAME', 'namadb');
+define('DB_USER', 'userdb'); // Ganti dengan username database Anda
+define('DB_PASS', 'passworddb');     // Ganti dengan password database Anda
 define('DB_CHARSET', 'utf8mb4');
 
 // Opsi untuk koneksi PDO
